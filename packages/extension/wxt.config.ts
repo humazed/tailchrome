@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type UserManifest } from "wxt";
+import { privacyManifest } from "./src/privacy/manifest";
+import { privacyBuildHooks } from "./src/privacy/build";
 import {
   firefoxDisclosure,
   isFirefoxDisclosureReady,
@@ -57,6 +59,7 @@ const extensionDescription =
   "Access your tailnet from your browser. Run a full Tailscale node per browser profile without affecting system networking.";
 
 export default defineConfig({
+  hooks: privacyBuildHooks,
   srcDir: ".",
   entrypointsDir: "entrypoints",
   publicDir: "public",
@@ -95,11 +98,14 @@ export default defineConfig({
     },
   }),
   manifest: ({ browser }) => {
+    const privacy = privacyManifest(browser);
     const manifest: TailchromeManifest = {
       name: "Tailchrome",
+      options_ui: privacy.options_ui,
       description: extensionDescription,
       host_permissions: ["<all_urls>"],
       permissions: [
+        ...privacy.permissions,
         "proxy",
         "storage",
         "nativeMessaging",
@@ -114,6 +120,7 @@ export default defineConfig({
     };
 
     if (browser === "chrome") {
+      manifest.minimum_chrome_version = "122";
       manifest.side_panel = { default_path: "popup.html" };
       manifest.key =
         "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5/m925fPufiafHbegmZwPoowhf4XOlaEKseW/9Q3u47OQ6ALk/hSYqVOjvv2SZSVIVbVJs5CrfmjWqf65Y6Nf3EkkDYHiimLXifO1XekQMQWsp1KZNHR8ymKDyOE/BFFpl2QgQgfwvNLUYZv6z9+lS95UBZk4rkpm3qS3yFuMaShdURljE/DyrmelRQDCy8YJsoj2yyf4qkap3DCw5k2z5nRGxmw71E4JwavlKySIH5C+wCMo/EoHkjrS/uupbpTxvfTIuXYmmPhx3yyCwBazNrkNjNe5NQk1cLvUkrGvnzo8PO2Zx3Qh9qRZUtdMZ7p1xDzUZi37uePw6QT1xjKwQIDAQAB";

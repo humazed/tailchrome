@@ -4,6 +4,7 @@ import { registerStartupWakeListener } from "@tailchrome/shared/background/start
 import { sanitizeDiagnosticMessage } from "@tailchrome/shared/helper-diagnostics";
 import { CHROME_NATIVE_HOST_ID } from "../constants";
 import { ChromeProxyManager } from "./chrome-proxy-manager";
+import { withPrivacy } from "../privacy/integration";
 
 export function startChromeBackground(): void {
   // Wake the MV3 service worker at browser launch so initBackground below
@@ -11,7 +12,7 @@ export function startChromeBackground(): void {
   registerStartupWakeListener();
 
   const background = initBackground(
-    new ChromeProxyManager(),
+    withPrivacy(new ChromeProxyManager()),
     CHROME_NATIVE_HOST_ID,
     {
       browserKind: "chrome",

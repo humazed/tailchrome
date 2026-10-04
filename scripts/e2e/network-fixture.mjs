@@ -40,7 +40,7 @@ function listen(server) {
 
 // Real local HTTP and proxy sockets make direct fallback observable. Only this
 // fixture's origin is accepted as a proxy destination.
-export async function createRoutingNetwork({ tls, probeStatus = 204 } = {}) {
+export async function createRoutingNetwork({ tls, probeStatus = 204, handleRequest } = {}) {
   const hits = [];
   const sockets = new Set();
   const forwardedPorts = new Set();
@@ -55,6 +55,7 @@ export async function createRoutingNetwork({ tls, probeStatus = 204 } = {}) {
       path: req.url,
       proxied: forwardedPorts.has(req.socket.remotePort) || req.headers["x-tailchrome-test-proxy"] === "yes",
     });
+    if (handleRequest) { handleRequest(req, res); return; }
     res.writeHead(200, { "Content-Type": "text/plain", "Cache-Control": "no-store" });
     res.end("routing origin reached");
   };

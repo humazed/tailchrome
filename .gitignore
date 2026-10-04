@@ -37,6 +37,7 @@ Thumbs.db
 
 # Tooling
 .context/
+evidence/
 
 # Private keys, certificates, and signing artifacts
 *.key
