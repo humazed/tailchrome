@@ -33,7 +33,7 @@ const chromeMock = {
   },
   runtime: {
     lastError: null as chrome.runtime.LastError | null,
-    getManifest: () => ({ version: "0.1.13" }),
+    getManifest: () => ({ name: "Tailchrome", version: "0.1.13" }),
     getPlatformInfo: () =>
       Promise.resolve({
         os: "mac",

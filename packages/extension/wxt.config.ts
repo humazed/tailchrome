@@ -100,7 +100,7 @@ export default defineConfig({
   manifest: ({ browser }) => {
     const privacy = privacyManifest(browser);
     const manifest: TailchromeManifest = {
-      name: "Tailchrome",
+      name: browser === "chrome" ? "Tailchrome Privacy" : "Tailchrome",
       options_ui: privacy.options_ui,
       description: extensionDescription,
       host_permissions: ["<all_urls>"],

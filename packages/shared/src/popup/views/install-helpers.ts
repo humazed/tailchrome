@@ -246,8 +246,8 @@ export async function renderInstallFlow(
     opts.state.repairRegistrationAvailable ||
     opts.state.helperFailure?.kind === "helper-not-allowed";
   title.textContent = repairProminent
-    ? "Set up or repair Tailchrome"
-    : "Set up Tailchrome";
+    ? `Set up or repair ${chrome.runtime.getManifest().name}`
+    : `Set up ${chrome.runtime.getManifest().name}`;
 
   const description = document.createElement("p");
   description.className = "centered-view-text";
@@ -280,8 +280,8 @@ export async function renderInstallFlow(
   nextTitle.textContent = supported ? "After setup" : "Supported releases";
   const nextBody = document.createElement("p");
   nextBody.textContent = supported
-    ? "The installer verifies the helper and registers it for your account. Tailchrome will retry discovery automatically."
-    : "Tailchrome cannot identify a supported operating system and architecture, so it will not guess an asset.";
+    ? `The installer verifies the helper and registers it for your account. ${chrome.runtime.getManifest().name} will retry discovery automatically.`
+    : `${chrome.runtime.getManifest().name} cannot identify a supported operating system and architecture, so it will not guess an asset.`;
   next.append(nextTitle, nextBody, createDiscoveryRetryButton());
   content.appendChild(next);
 
@@ -570,7 +570,7 @@ function createCodeBlock(command: string): HTMLElement {
 function helperFailureDescription(kind: HelperFailureKind | undefined): string {
   switch (kind) {
     case "helper-unavailable":
-      return "Tailchrome could not find a registered helper for this browser.";
+      return `${chrome.runtime.getManifest().name} could not find a registered helper for this browser.`;
     case "helper-not-allowed":
       return "This browser refused access to the registered helper.";
     case "helper-incompatible":

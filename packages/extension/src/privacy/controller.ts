@@ -10,6 +10,8 @@ import { preparePagePolicy, registeredPrivacyScript } from "./bundled";
 import { headerRules } from "./network";
 import { CookieCleaner } from "./cookies";
 
+type PageUpdateResult = { kind: "applied" } | { kind: "reload-required"; message: string };
+
 export class PrivacyController {
   constructor() {
     this.ready = this.load().catch(error => { this.startupError = errorMessage(error); });
@@ -88,7 +90,10 @@ export class PrivacyController {
       // Do not leave a previous node's headers behind after a permission,
       // registration or location failure.
       let message = errorMessage(error);
-      try { await this.apply(null); }
+      try {
+        const cleanup = await this.apply(null);
+        if (cleanup.kind === "reload-required") message += " " + cleanup.message;
+      }
       catch (cleanupError) { message += " " + errorMessage(cleanupError); }
       await this.fail(new Error(message));
     });
@@ -112,7 +117,6 @@ export class PrivacyController {
   private async sync(): Promise<void> {
     if (this.startupError) {
       this.cookieScope = null;
-      await this.apply(null);
       throw new Error(this.startupError);
     }
     const state = this.state;
@@ -122,8 +126,13 @@ export class PrivacyController {
       node?.online && !state.pendingExitNodeID && state.routingPolicy.selectedExitNodeID === node.id;
     if (!this.settings.enabled || !connected || !state || !node) {
       this.cookieScope = null;
-      const cleanup = await Promise.allSettled([this.apply(null), this.setWebRTC(false)]);
-      for (const result of cleanup) if (result.status === "rejected") throw result.reason;
+      const [pages, webRTC] = await Promise.allSettled([this.apply(null), this.setWebRTC(false)]);
+      if (pages.status === "rejected") throw pages.reason;
+      if (webRTC.status === "rejected") throw webRTC.reason;
+      if (pages.value.kind === "reload-required") {
+        await this.report({ kind: "attention", message: pages.value.message });
+        return;
+      }
       await this.report({ kind: "inactive", message: this.settings.enabled ?
         "Location matching is inactive until an exit node is connected." : "Privacy features are turned off." });
       return;
@@ -140,18 +149,22 @@ export class PrivacyController {
     };
     const needsPage = this.settings.timeZone || this.settings.location || this.settings.language ||
       this.settings.reduceAgent || this.settings.fingerprint || this.settings.blockWorkers;
-    await this.apply(needsPage ? policy : null);
+    const pages = await this.apply(needsPage ? policy : null);
+    if (pages.kind === "reload-required") {
+      await this.report({ kind: "attention", message: pages.message });
+      return;
+    }
     await this.report({
       kind: "ready", message: "The Egypt privacy profile is active for " + node.hostname + ".",
       nodeId: node.id, profile,
     });
   }
 
-  private async apply(policy: PagePolicy | null): Promise<void> {
+  private async apply(policy: PagePolicy | null): Promise<PageUpdateResult> {
     const previousPolicy = this.policy;
     const key = JSON.stringify(policy);
     const scripts = await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPT_ID] });
-    if (key === this.appliedKey && (!policy || scripts.length > 0)) return;
+    if (key === this.appliedKey && (!policy || scripts.length > 0)) return { kind: "applied" };
     if (policy) {
       const registration = registeredPrivacyScript(policy);
       // Chrome rejects an empty matches list. Only-list mode with no domains
@@ -172,7 +185,9 @@ export class PrivacyController {
     // reloading a user's forms; the settings page explains the reload boundary.
     const tabs = await chrome.tabs.query({});
     const tabIds = tabs.flatMap(tab => {
-      if (tab.id === undefined || !tab.url || !/^https?:/.test(tab.url)) return [];
+      // Discarded tabs have no live document; document-start scripts cover
+      // their next load. Trying to inject into them can fail or wake them.
+      if (tab.discarded || tab.id === undefined || !tab.url || !/^https?:/.test(tab.url)) return [];
       const host = new URL(tab.url).hostname;
       if (RESTRICTED_DOMAINS.includes(host)) return [];
       return [tab.id];
@@ -192,8 +207,14 @@ export class PrivacyController {
       result.value.some(frame => "error" in frame && frame.error));
     if (failures.length && (policy || previousPolicy)) {
       this.appliedKey = "";
-      throw new Error("Some open pages could not be updated; reload those pages to apply the current privacy settings.");
+      // A closed/restricted frame must not undo the successfully registered
+      // scripts and headers for every other tab. Keep the warning visible and
+      // retry existing documents on the next status check.
+      return { kind: "reload-required", message:
+        (policy ? "The Egypt privacy profile is applied to new pages. " : "Privacy overrides are disabled for new pages. ") +
+        failures.length + " open tab(s) could not be updated; reload those pages to apply the current settings." };
     }
+    return { kind: "applied" };
   }
 
   private async setWebRTC(enabled: boolean): Promise<void> {

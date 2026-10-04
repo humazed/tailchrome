@@ -1,4 +1,4 @@
-# Tailchrome: Egypt privacy profile for Chrome
+# Tailchrome Privacy: Egypt profile for Chrome
 
 This is the tailchrome Git submodule inside Automation. It retains upstream
 history from revision 47fb2cc655109a7e8b839a44c2a3e7f0df84cee1. The privacy
@@ -6,7 +6,7 @@ additions target Chrome; upstream Firefox integration is unchanged.
 
 ## Settings and profile
 
-Open **Privacy & location** at the bottom of the Tailchrome popup. The bundled
+Open **Privacy & location** at the bottom of the Tailchrome Privacy popup. The bundled
 profile applies while an exit node is connected and routing is healthy:
 
 - Time zone: Africa/Cairo, using Chrome's date-specific daylight-saving rules.
@@ -77,7 +77,10 @@ input; it is not a substitute for testing this implementation.
 - Active means the extension applied its scripts and request rules. It does not
   establish anonymity or guarantee that a website cannot detect an override.
 - Existing pages can cache earlier values. Future reads are updated without
-  reloading users' forms; reload a page to discard its own cached data.
+  reloading users' forms; reload a page to discard its own cached data. Discarded
+  tabs receive the profile when loaded. If an existing document cannot be
+  updated, new-page scripts and headers stay enabled and the settings page
+  reports Needs attention with a reload warning for those older tabs.
 - Startup and connection changes are asynchronous. Wait for Active before
   opening pages that need the Egypt profile. This is not a privacy kill switch.
 - Internal browser pages, restricted sites and special frames such as about:blank
@@ -94,13 +97,19 @@ input; it is not a substitute for testing this implementation.
 
 Privacy modules live in packages/extension/src/privacy/. The options page is
 its own packages/extension/entrypoints/privacy/ entrypoint. Shared connection
-code and the Go helper are unchanged. Existing production integration is limited
-to four files:
+code and the Go helper are unchanged. Privacy behavior connects through four
+existing production files:
 
 1. entrypoints/background.ts starts the Chrome privacy controller.
 2. src/background/chrome.ts observes the existing proxy manager's applied state.
 3. entrypoints/popup/main.ts adds the Chrome settings link.
 4. wxt.config.ts adds the Chrome manifest fields and privacy build hook.
+
+The Chrome manifest also names the extension Tailchrome Privacy. Popup labels,
+setup messages and page titles read that name from the manifest. These small
+branding edits touch the shared popup header and setup views, plus the popup
+loading text. Firefox retains its upstream name. The extension ID, native-host
+identifiers and Tailchrome Helper app name stay unchanged.
 
 The build hook emits the Egypt profile, feature switches, session-seed bit
 setters and the page runtime into WXT's output directory. It never rewrites
@@ -128,8 +137,9 @@ After the custom changes have been committed, update inside this submodule:
     node scripts/e2e/privacy.mjs
     node scripts/e2e/chrome-proxy-auth.mjs
 
-Resolve conflicts at the four integration points; keep privacy behavior in its
-module. After approved commits/pushes, Automation records the submodule commit.
+Resolve conflicts at the four integration points and preserve the manifest-based
+labels; keep privacy behavior in its module. After approved commits/pushes,
+Automation records the submodule commit.
 Normal Git ancestry supports upstream merges without a patch-replay workflow.
 
 ## Verification
@@ -146,5 +156,8 @@ worker blocking, cookie cleanup, exclusions, country mismatches and disconnect
 restoration. The upstream proxy-authentication test covers another extension's
 HTTPS requests and native-helper restarts.
 
-Current results are recorded in [PLAN.md](PLAN.md). Raw screenshots are ignored,
-local captures under evidence/.
+The installed humazed Chrome profile was also tested through the operator's
+existing Tailscale account and actual Egypt exit node. That live run caught and
+verified the fix for existing-tab update failures. Current results and the
+installation paths are recorded in [PLAN.md](PLAN.md). Raw screenshots and live
+test captures are ignored, local files under evidence/.

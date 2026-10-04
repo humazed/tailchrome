@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Tailchrome · Privacy &amp; location</title>
+  <title>Privacy &amp; location</title>
   <meta name="manifest.include" content='["chrome"]'>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <main>
-    <header><p class="brand">TAILCHROME</p><h1>Privacy &amp; location</h1>
+    <header><p class="brand" id="brand"></p><h1>Privacy &amp; location</h1>
       <p>Use the bundled Egypt profile while your exit node is connected.</p></header>
     <section class="status" aria-live="polite"><span id="status-kind">Checking</span><p id="status-message">Reading connection and privacy settings…</p>
       <button type="button" id="permissions">Check status</button>
@@ -30,7 +30,7 @@
         <label class="toggle"><span><strong>Clear site cookies after the last tab closes</strong><small>Applies to sites visited while these features are active. This signs you out. Cookies used by another open tab are kept.</small></span><input id="cookies" type="checkbox"></label>
       </section>
       <section><h2>Excluded sites</h2>
-        <p>Keep the normal browser values on these domains and their subdomains. Tailchrome’s routing exclusions also apply.</p>
+        <p>Keep the normal browser values on these domains and their subdomains. Your routing exclusions also apply.</p>
         <label class="field">One hostname per line<textarea id="excluded" rows="4" placeholder="example.com"></textarea></label>
       </section>
       <div class="save-bar"><p id="feedback" role="status"></p><button type="submit" id="save">Save settings</button></div>

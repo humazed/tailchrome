@@ -299,6 +299,54 @@ try {
   await settings.waitForFunction(async () => (await chrome.runtime.sendMessage({ feature: "privacy", action: "get" })).status.kind === "ready");
   assert.equal(await connected.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), "Africa/Cairo");
   console.log("PASS: Egypt works without node coordinates; other countries are flagged and stale overrides cleared");
+
+  // A live profile can contain closed, discarded or restricted documents.
+  // Force one existing-tab injection to reject, while testing registration,
+  // new-document execution and network rules in the actual browser.
+  const unavailableTab = await settings.evaluate(async url => {
+    const tabs = await chrome.tabs.query({});
+    return tabs.find(tab => tab.url === url)?.id;
+  }, connected.url());
+  assert.equal(typeof unavailableTab, "number");
+  const workerTarget = browser.targets().find(target =>
+    target.type() === "service_worker" && target.url().startsWith("chrome-extension://" + id + "/"));
+  assert.ok(workerTarget);
+  const worker = await workerTarget.worker();
+  assert.ok(worker);
+  await worker.evaluate(tabId => {
+    const execute = chrome.scripting.executeScript.bind(chrome.scripting);
+    globalThis.restorePrivacyInjection = () => { chrome.scripting.executeScript = execute; };
+    chrome.scripting.executeScript = (...args) => args[0].target.tabId === tabId
+      ? Promise.reject(new Error("The existing frame is no longer available.")) : execute(...args);
+  }, unavailableTab);
+  try {
+    snapshot.settings.language = false;
+    assert.equal((await request("save", snapshot.settings)).status.kind, "attention");
+    snapshot.settings.language = true;
+    const partial = await request("save", snapshot.settings);
+    assert.equal(partial.status.kind, "attention");
+    assert.match(partial.status.message, /applied to new pages/);
+    const fresh = await browser.newPage();
+    await fresh.goto(network.baseURL + "/partial-injection");
+    assert.deepEqual(await fresh.evaluate(() => window.early), {
+      zone: "Africa/Cairo", language: "ar-EG", agent: observed.early.agent,
+    });
+    assert.equal(hits.find(hit => hit.path === "/partial-injection").headers["accept-language"], "ar-EG");
+    const protection = await settings.evaluate(async () => ({
+      rules: await chrome.declarativeNetRequest.getSessionRules(),
+      scripts: await chrome.scripting.getRegisteredContentScripts(),
+      webRTC: await chrome.privacy.network.webRTCIPHandlingPolicy.get({}),
+    }));
+    assert.ok(protection.rules.length > 0);
+    assert.ok(protection.scripts.length > 0);
+    assert.equal(protection.webRTC.value, "disable_non_proxied_udp");
+    await fresh.close();
+  } finally {
+    await worker.evaluate(() => { globalThis.restorePrivacyInjection(); delete globalThis.restorePrivacyInjection; });
+  }
+  assert.equal((await request("retry")).status.kind, "ready");
+  console.log("PASS: existing-tab injection failures warn without removing new-page protection; retry recovers");
+
   await settings.evaluate(status => chrome.runtime.sendMessage({
     tailchromeE2ENative: { reply: { cmd: "status", status } },
   }), makeStoppedState());

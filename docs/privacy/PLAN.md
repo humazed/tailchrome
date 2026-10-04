@@ -20,6 +20,7 @@ Upstream baseline: 47fb2cc655109a7e8b839a44c2a3e7f0df84cee1.
 - [x] Verify types, automated tests, build and actual browser/network behavior.
 - [x] Inspect the rendered settings page.
 - [x] Document implementation boundaries, limitations and upstream maintenance.
+- [x] Install in humazed Chrome and test through the existing account's real Egypt exit node.
 
 ## Observed and changed
 
@@ -34,9 +35,10 @@ Temporal is covered as well as Date and Intl. Header rules cover main-document
 requests and honor excluded initiators. Country mismatches clear stale overrides
 and report attention. Disconnect releases page/header and WebRTC settings.
 
-Privacy behavior is isolated in its own module and entrypoint. Only four
-existing production files have small integration edits. Shared state handling,
-the native Go helper and Firefox integration are unchanged.
+Privacy behavior is isolated in its own module and entrypoint, with four
+existing production files connecting it to the extension. Separate branding
+edits make popup labels and setup messages read the manifest name. Shared state
+handling, the native Go helper and Firefox integration are unchanged.
 
 ## Verification: 2026-10-04
 
@@ -69,19 +71,79 @@ The privacy browser run verifies:
 - Disable/re-enable, worker blocking, exclusions, last-tab cookie cleanup,
   coordinate-free Egypt nodes, mismatched countries and disconnect restoration.
 
-All browser runs use fresh headless profiles and task-owned resources. The
+The automated browser runs use fresh headless profiles and task-owned resources. The
 native helper is the upstream fixture; HTTP proxy, TLS and UDP sockets are real.
-No test used a real tailnet, a signed-in browser profile or a production server.
 Firefox browser testing was removed from scope at the operator's request.
+
+## Installation and live verification: 2026-10-04
+
+Installed and enabled the unpacked Chrome build in the operator-authorized
+humazed profile, retaining the existing extension ID and Tailscale account.
+The previous Web Store extension was disabled. Its native helper was v0.1.11,
+which does not support v0.1.14's proxy authentication. Verified the official
+v0.1.14 helper ZIP checksum, code signature and Apple notarization, installed
+the app under ~/Applications/Tailchrome Helper.app, and registered its binary
+for Chrome only. No Tailscale identity or browser storage was deleted.
+
+Connected the existing account and selected its available exit node. In the
+actual Chrome 154 profile, verified:
+
+- Cloudflare's trace endpoint reports country EG for the browser's public IP.
+- Date, Intl and Temporal report Africa/Cairo; January is UTC+2 and July UTC+3.
+- navigator.language is ar-EG; httpbin receives the same Accept-Language and
+  the same reduced User-Agent exposed to the page.
+- Geolocation returns the bundled Egypt coordinates with 600 km accuracy.
+- High-entropy version values are empty.
+- Canvas, WebGL and audio readouts are changed and stable across repeated reads.
+- A real RTCPeerConnection using a public STUN server completes ICE gathering
+  with zero address candidates. The headless test separately checks actual UDP
+  traffic against a working local STUN positive control.
+
+Live testing found that an existing-tab injection failure rolled back scripts
+and headers for every new tab. The controller now skips discarded tabs and
+returns an explicit partial-update result for other document failures. New-page
+protection stays installed; the settings page reports which scope is protected
+and that older pages need reloading. Genuine registration/rule failures still
+clear stale overrides. A browser regression reproduces a rejected existing-tab
+injection, verifies first-script values and real request headers on a fresh
+page, and verifies recovery on retry.
+
+After the fix: typecheck, all 111 extension tests, the Chrome build, the complete
+privacy browser test and the live checks above passed. The local live test
+report is evidence/humazed-live-privacy.json. Existing user tabs were not
+reloaded; Chrome reports 160 older tabs whose values could not be updated.
+Newly loaded test pages pass all checks. The ordinary extension Reload action
+stalled after rebuilding; loading the same output folder through Load unpacked
+recovered it with the saved account and selected exit node intact.
+
+## Chrome display name: 2026-10-04
+
+Renamed the Chrome extension to Tailchrome Privacy in the manifest, popup,
+setup messages and privacy settings. Labels and page titles read the manifest
+name. Firefox keeps Tailchrome, and the extension ID and native-host identifiers
+are unchanged.
+
+Typecheck, all 751 tests, the Chrome build and all ten privacy browser checks
+passed. Updated the installed humazed copy through Load unpacked using the same
+output directory. Chrome's extension details and popup both show Tailchrome
+Privacy. The saved account and Egypt exit node remained intact; reconnected
+after the update and verified that the popup showed the selected exit node
+without a routing-blocked message. The existing-tab Needs attention warning
+remains, as expected from the live checks above.
+
+The extension is left enabled and connected to Egypt. After live verification,
+the operator authorized committing and pushing the installation fix, rename and
+verification records, followed by Automation's submodule reference.
 
 ## Remaining boundaries
 
 No implementation work remains within the accepted scope. Special frames,
 worker environments unless blocked, previous site state and unmodified hardware
-surfaces remain outside full coverage; see README.md. Live tailnet behavior is
-not claimed verified by these fixture-backed tests.
+surfaces remain outside full coverage; see README.md. The live checks verify
+the selected Egypt exit node and newly loaded pages; they do not establish
+coverage of every existing tab or every website.
 
 The operator authorized committing and pushing on 2026-10-04. The owned fork is
 humazed/tailchrome; dantraynor/tailchrome remains upstream. Publish the custom
-commit before recording its revision in Automation. Existing Chrome profiles,
-including humazed, have not been modified or given this extension by this task.
+commit before recording its revision in Automation. The initial implementation
+and submodule pointer were committed and pushed before the installation work.

@@ -111,7 +111,7 @@ describe("renderInstallFlow", () => {
     vi.useFakeTimers();
     vi.mocked(sendMessage).mockClear();
     vi.mocked(copyToClipboard).mockClear();
-    chrome.runtime.getManifest = vi.fn().mockReturnValue({ version: "0.1.13" }) as typeof chrome.runtime.getManifest;
+    chrome.runtime.getManifest = vi.fn().mockReturnValue({ name: "Tailchrome", version: "0.1.13" }) as typeof chrome.runtime.getManifest;
     chrome.tabs.create = vi.fn().mockResolvedValue(undefined) as unknown as typeof chrome.tabs.create;
     document.body.textContent = "";
   });
@@ -277,7 +277,7 @@ describe("renderInstallFlow", () => {
   });
 
   it("never embeds an unsafe manifest version in a command or asset URL", async () => {
-    chrome.runtime.getManifest = vi.fn().mockReturnValue({ version: "0.1.13'; evil" }) as typeof chrome.runtime.getManifest;
+    chrome.runtime.getManifest = vi.fn().mockReturnValue({ name: "Tailchrome", version: "0.1.13'; evil" }) as typeof chrome.runtime.getManifest;
     setPlatform("linux", "x86-64");
     const root = document.createElement("div");
     await renderInstallFlow(root, { mode: "install", state: baseState({ hostConnected: false }) });

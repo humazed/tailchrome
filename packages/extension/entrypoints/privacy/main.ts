@@ -13,6 +13,9 @@ const input = (id: string) => element(id, HTMLInputElement);
 const button = (id: string) => element(id, HTMLButtonElement);
 const feedback = element("feedback", HTMLParagraphElement);
 const form = element("settings", HTMLFormElement);
+const name = chrome.runtime.getManifest().name;
+document.title = name + " · Privacy & location";
+element("brand", HTMLParagraphElement).textContent = name;
 
 function showStatus(value: Snapshot): void {
   const status = element("status-kind", HTMLSpanElement);

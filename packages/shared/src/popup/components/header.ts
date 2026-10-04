@@ -50,6 +50,7 @@ export function renderHeader(
   connected: boolean,
   disabled = false,
 ): void {
+  const name = chrome.runtime.getManifest().name;
   const header = document.createElement("div");
   header.className = "header";
 
@@ -59,12 +60,12 @@ export function renderHeader(
 
   const wordmark = document.createElement("span");
   wordmark.className = "header-wordmark";
-  wordmark.textContent = "Tailchrome";
+  wordmark.textContent = name;
   logo.appendChild(wordmark);
 
   const toggle = createToggle(connected, () => {
     sendMessage({ type: "toggle" });
-  }, connected ? "Disconnect Tailchrome" : "Connect Tailchrome", disabled);
+  }, `${connected ? "Disconnect" : "Connect"} ${name}`, disabled);
 
   header.appendChild(logo);
   header.appendChild(toggle);

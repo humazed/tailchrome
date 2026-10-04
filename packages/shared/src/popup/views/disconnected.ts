@@ -17,6 +17,7 @@ import { appendHelperDiagnosticActions } from "../helper-diagnostics";
  * Shows error recovery hints when an error is present.
  */
 export function renderDisconnected(root: HTMLElement, state?: TailscaleState): void {
+  const name = chrome.runtime.getManifest().name;
   root.textContent = "";
   const view = document.createElement("div");
   view.className = "view";
@@ -44,9 +45,9 @@ export function renderDisconnected(root: HTMLElement, state?: TailscaleState): v
           break;
         case "helper-stopped":
           subtitleText =
-            "The helper stopped after connecting. Tailchrome is retrying.";
+            `The helper stopped after connecting. ${name} is retrying.`;
           recoveryHints = [
-            "Tailchrome will retry automatically",
+            `${name} will retry automatically`,
             "Use Retry Connection to try again now",
           ];
           break;
@@ -64,7 +65,7 @@ export function renderDisconnected(root: HTMLElement, state?: TailscaleState): v
           break;
         case "helper-unavailable":
           subtitleText =
-            "Tailchrome could not find a registered helper for this browser.";
+            `${name} could not find a registered helper for this browser.`;
           break;
         case "helper-not-allowed":
           subtitleText =
