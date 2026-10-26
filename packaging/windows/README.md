@@ -19,7 +19,7 @@ The PowerShell bootstrap supports native amd64 and ARM64 Windows. Download
 `tailchrome-install.ps1` from the chosen release and run:
 
 ```powershell
-& .\tailchrome-install.ps1 -Version v0.1.14
+& .\tailchrome-install.ps1 -Version v0.1.15
 ```
 
 It installs `%LOCALAPPDATA%\Tailchrome\tailchrome.exe`, verifies checksums and
@@ -41,7 +41,7 @@ Then build from the repository root:
 
 ```powershell
 .\packaging\windows\build-msi.ps1 `
-  -Version v0.1.14 `
+  -Version v0.1.15 `
   -AllowUnsignedDevelopmentBuild
 ```
 
@@ -49,6 +49,10 @@ The switch is deliberately explicit: its output is for local testing and is
 not eligible for release.
 
 ## Release signing
+
+SignPath Foundation has accepted the project. Follow the
+[SignPath setup guide](../../docs/signpath-setup.md) to configure and run the
+separate self-signed test workflow before production certificate issuance.
 
 Signed releases follow
 [WINDOWS_CODE_SIGNING_POLICY.md](../../docs/WINDOWS_CODE_SIGNING_POLICY.md),

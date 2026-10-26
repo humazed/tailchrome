@@ -1,6 +1,7 @@
 # Privacy implementation
 
-Upstream baseline: 47fb2cc655109a7e8b839a44c2a3e7f0df84cee1.
+Upstream baseline: 13c87cb7fdf028a0d5eb6fc261ad05e4229ea741 (v0.1.15), merged on
+2026-10-26. The original implementation started from 47fb2cc655109a7e8b839a44c2a3e7f0df84cee1.
 
 ## Accepted scope
 
@@ -135,7 +136,62 @@ The extension is left enabled and connected to Egypt. After live verification,
 the operator authorized committing and pushing the installation fix, rename and
 verification records, followed by Automation's submodule reference.
 
+## Helper cleanup: 2026-10-25
+
+The Mac held three helper copies, and only the per-user app was registered for
+Chrome. Removed the other two and their registrations, following upstream's
+one-method-per-account rule:
+
+- The v0.1.11 system package: `/Applications/Tailchrome Helper.app`,
+  `/Library/Application Support/Tailscale/BrowserExt/` and its package receipt.
+- Its legacy runtime copy, v0.1.13 with a `.before-0.1.13` backup, in
+  `~/Library/Application Support/Tailscale/BrowserExt/`, plus the Brave,
+  Chromium, Edge and Firefox registrations that pointed to it.
+
+Chrome's registration and the node state in `~/.config/tailscale-browser-ext/`
+were not touched. The remaining helper reports v0.1.14, and its signature and
+Gatekeeper checks pass. Installation and helper updates are described in
+README.md.
+
+## Upstream v0.1.15 update: 2026-10-26
+
+Merged upstream/main at 13c87cb (the v0.1.15 release plus upstream documentation
+and Homebrew updates) with no conflicts; none of the four integration points or
+the branding files changed upstream. Upstream's changes add IPv6 subnet routing,
+popup device and profile controls, and Chrome proxy-authentication fixes.
+
+Checks on the merged tree:
+
+- pnpm install --frozen-lockfile and pnpm typecheck pass.
+- pnpm test: 775 shared, 128 extension, 7 browser-fixture utility and 11
+  dependency tests pass; total 921, zero failures.
+- pnpm build:chrome builds Tailchrome Privacy 0.1.15.
+- node scripts/e2e/privacy.mjs: all ten privacy checks pass in Chrome for
+  Testing 150.0.7871.24, after reinstalling that browser into
+  `~/.cache/puppeteer`, which was missing.
+- node scripts/e2e/chrome-proxy-auth.mjs passes.
+- The generated settings screenshot was inspected directly and renders correctly.
+
+Helper: the official v0.1.15 `tailchrome-helper-macos-user.zip` matched the
+release's SHA256SUMS.txt, is signed by the same Developer ID team (UL9B796XFN)
+as v0.1.14, is notarized with a valid stapled ticket and passes Gatekeeper.
+It replaced `~/Applications/Tailchrome Helper.app`, and
+`install --binary-path` registered it for Chrome, Chrome Beta, Canary and Dev,
+Chromium, Brave, Vivaldi, Opera and Firefox, all of which already had settings
+folders. Every registration points to the one helper. Node state was not touched.
+
+Chrome: the extension was off in the Humazed profile (labelled Ibrahim in
+Chrome). Turning it on still showed 0.1.14; the Reload button stalled on
+"Reloading…"; Load unpacked on the same output folder loaded 0.1.15 with no
+errors. The extension started the v0.1.15 helper from `~/Applications`, and its
+popup showed the normal "Tailscale is not connected" view with no helper or
+version warning. The extension was turned off again, as found. It was not
+connected to the tailnet, so routing through the exit node was not rechecked
+live this time.
+
 ## Remaining boundaries
+
+The upstream merge is staged in the submodule but not committed.
 
 No implementation work remains within the accepted scope. Special frames,
 worker environments unless blocked, previous site state and unmodified hardware

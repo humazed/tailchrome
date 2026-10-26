@@ -1,7 +1,7 @@
 # Tailchrome Privacy: Egypt profile for Chrome
 
 This is the tailchrome Git submodule inside Automation. It retains upstream
-history from revision 47fb2cc655109a7e8b839a44c2a3e7f0df84cee1. The privacy
+history through revision 13c87cb7fdf028a0d5eb6fc261ad05e4229ea741 (v0.1.15). The privacy
 additions target Chrome; upstream Firefox integration is unchanged.
 
 ## Settings and profile
@@ -23,6 +23,52 @@ All scripts are packaged with the extension and registered at document start.
 There is no userScripts permission, no Allow user scripts toggle, no external
 location lookup and no added runtime dependency. Developer mode is still needed
 if loading an unpacked extension, as it is for any such Chrome extension.
+
+## Installation on the operator's Mac
+
+Chrome's **Humazed** profile, which Chrome labels **Ibrahim** in its Profiles
+menu and window titles, runs this fork as an unpacked extension, loaded
+through **Load unpacked** from `packages/extension/.output/chrome-mv3`. The
+manifest key gives it the Web Store extension's ID, so the helper registration,
+extension storage and Tailscale account carry over. Chrome reads that folder
+directly: `pnpm build`, `pnpm build:chrome` and `pnpm e2e:proxy-auth:chrome`
+replace the installed extension's files, and Chrome runs them after its next
+reload or restart. If a check fails after a build, rebuild the last good commit.
+The ordinary Reload button can stall on "Reloading…" after a rebuild; Load
+unpacked on the same folder recovers with the account and exit node intact.
+The file dialog hides `.output`: press Cmd+Shift+G and paste the full folder
+path. The operator keeps the extension off until it is needed; turning it on
+does not refresh the version Chrome shows, so reload it, check the version on
+its details page, and turn it off again.
+
+The helper is upstream's signed, notarized per-user app, the method the popup
+offers first on macOS: `~/Applications/Tailchrome Helper.app`. Upstream supports
+one installation method per account, so do not add the system package, Homebrew
+or `tailchrome-install.sh` beside it. Chrome's registration file,
+`~/Library/Application Support/Google/Chrome/NativeMessagingHosts/com.tailscale.browserext.chrome.json`,
+points to the app's `Contents/MacOS/tailscale-browser-ext`. Tailscale node state
+lives separately in `~/.config/tailscale-browser-ext/`, so replacing or
+reinstalling the helper keeps the account.
+
+Keep the helper and extension on the same upstream release; the extension's
+version is in `packages/extension/package.json`. After the upstream update
+procedure below passes:
+
+1. Download `tailchrome-helper-macos-user.zip` and `SHA256SUMS.txt` from the
+   matching [release](https://github.com/dantraynor/tailchrome/releases) and
+   check the ZIP with `shasum -a 256 --check --ignore-missing SHA256SUMS.txt`.
+2. Replace `~/Applications/Tailchrome Helper.app` with the unzipped app and open
+   it once. Opening it registers the helper for Chrome, Firefox and the other
+   Chromium browsers that have a settings folder; only Chrome uses it. The app
+   runs `tailscale-browser-ext install --binary-path <its own path>`; running
+   that command directly does the same without the app's dialog.
+3. Use Load unpacked on `packages/extension/.output/chrome-mv3` again.
+4. Confirm the helper version:
+
+       "$HOME/Applications/Tailchrome Helper.app/Contents/MacOS/tailscale-browser-ext" version
+
+Upstream's [macOS helper guide](../../packaging/macos/README.md) has the removal
+commands for each installation method.
 
 ## Behavior
 
@@ -137,6 +183,10 @@ After the custom changes have been committed, update inside this submodule:
     node scripts/e2e/privacy.mjs
     node scripts/e2e/chrome-proxy-auth.mjs
 
+If the browser tests report that Chrome for Testing is missing from
+`~/.cache/puppeteer`, run `pnpm exec puppeteer browsers install chrome` and
+rerun them.
+
 Resolve conflicts at the four integration points and preserve the manifest-based
 labels; keep privacy behavior in its module. After approved commits/pushes,
 Automation records the submodule commit.
@@ -158,6 +208,6 @@ HTTPS requests and native-helper restarts.
 
 The installed humazed Chrome profile was also tested through the operator's
 existing Tailscale account and actual Egypt exit node. That live run caught and
-verified the fix for existing-tab update failures. Current results and the
-installation paths are recorded in [PLAN.md](PLAN.md). Raw screenshots and live
+verified the fix for existing-tab update failures. Current results are
+recorded in [PLAN.md](PLAN.md). Raw screenshots and live
 test captures are ignored, local files under evidence/.

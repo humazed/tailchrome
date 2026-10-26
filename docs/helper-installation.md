@@ -1,5 +1,7 @@
 # Helper installation
 
+Quick install one-liners and store links are in the [README](../README.md#install).
+
 The commands on this page describe v0.1.14 and later. The helper release must
 be published before the matching extension is distributed. For older releases,
 use their attached installer instructions and legacy flags.
@@ -28,13 +30,13 @@ To inspect or pin the Unix installer, download `tailchrome-install.sh` from the
 chosen release, inspect it, then run:
 
 ```bash
-bash ./tailchrome-install.sh --version v0.1.14
+bash ./tailchrome-install.sh --version v0.1.15
 ```
 
 For the Windows script downloaded from that release:
 
 ```powershell
-& .\tailchrome-install.ps1 -Version v0.1.14
+& .\tailchrome-install.ps1 -Version v0.1.15
 ```
 
 The PowerShell installer requires a valid Authenticode signature by default.
