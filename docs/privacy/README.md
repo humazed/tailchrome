@@ -37,9 +37,16 @@ reload or restart. If a check fails after a build, rebuild the last good commit.
 The ordinary Reload button can stall on "Reloading…" after a rebuild; Load
 unpacked on the same folder recovers with the account and exit node intact.
 The file dialog hides `.output`: press Cmd+Shift+G and paste the full folder
-path. The operator keeps the extension off until it is needed; turning it on
-does not refresh the version Chrome shows, so reload it, check the version on
-its details page, and turn it off again.
+path. The operator keeps the extension off until it is needed. Turning it on
+runs the new files with the manifest and permissions from the last load, so
+the old version still shows, and new files that need a permission the old
+manifest lacked fail at startup: without `privacy`, `background.js` stops with
+"Cannot read properties of undefined (reading 'network')" before the Tailscale
+part starts, and Chrome adds the warning "Service worker registration failed.
+Status code: 15". After every build, reload it, check the version on its details
+page, and turn it off again. A Reload that took removes that warning but leaves
+the old error until Clear all; if the warning is still listed, the Reload did
+not take, so use Load unpacked.
 
 The helper is upstream's signed, notarized per-user app, the method the popup
 offers first on macOS: `~/Applications/Tailchrome Helper.app`. Upstream supports
