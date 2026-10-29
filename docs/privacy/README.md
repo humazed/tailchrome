@@ -85,8 +85,9 @@ commands for each installation method.
 - Browser identity: retain the actual browser family and operating system,
   reduce detailed versions and suppress matching high-entropy client hints.
 - WebRTC: use Chrome's disable_non_proxied_udp policy. This is browser-wide and
-  may affect calls on excluded sites. Disconnecting or turning protection off
-  releases this extension's setting without clearing another extension's choice.
+  may affect calls on sites that split tunneling sends around the exit node.
+  Disconnecting or turning protection off releases this extension's setting
+  without clearing another extension's choice.
 - Fingerprint readouts: small, repeatable changes to canvas, WebGL pixels and
   audio samples. A session seed survives background-worker restarts and differs
   by origin. Hardware descriptions, fonts and other fingerprint surfaces remain.
@@ -96,7 +97,8 @@ commands for each installation method.
   relevant tab closes. Off by default because it signs users out. Cookie stores,
   partitions, open tabs and exclusions are respected.
 - Exclusions: literal IPs, internal names, Chrome's extension-store origins,
-  Tailchrome routing exclusions and user exclusions retain native page values.
+  and sites that split tunneling sends around the exit node retain native page
+  values. Split tunneling is the only user-controlled way to leave a site out.
   Header rules also honor excluded request initiators, following Windscribe's
   allowlist behavior. WebRTC's browser-wide control is the exception.
 
@@ -209,7 +211,7 @@ use the operator's browser profiles or a real tailnet.
 They check first-inline-script values, headers/client hints, coordinates,
 Date/Intl/Temporal, Egypt's DST gaps/folds, ordinary frames, stable graphics/audio
 output, live settings changes, WebRTC network traffic with a positive control,
-worker blocking, cookie cleanup, exclusions, country mismatches and disconnect
+worker blocking, cookie cleanup, country mismatches and disconnect
 restoration. The upstream proxy-authentication test covers another extension's
 HTTPS requests and native-helper restarts.
 

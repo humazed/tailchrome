@@ -1,4 +1,4 @@
-import { parseDomain, STATUS_KEY, type PrivacySettings } from "../../src/privacy/model";
+import { STATUS_KEY, type PrivacySettings } from "../../src/privacy/model";
 import { privacyRequest, type Snapshot } from "../../src/privacy/ui";
 
 const toggles = ["enabled", "timeZone", "location", "language", "webRTC", "reduceAgent", "fingerprint", "blockWorkers"] as const;
@@ -28,7 +28,6 @@ function render(value: Snapshot): void {
   snapshot = value;
   for (const key of toggles) input(key).checked = value.settings[key];
   input("cookies").checked = value.settings.cookies === "visited";
-  element("excluded", HTMLTextAreaElement).value = value.settings.excludedDomains.join("\n");
   showStatus(value);
 }
 
@@ -37,7 +36,6 @@ function settingsFromForm(): PrivacySettings {
   const settings = structuredClone(snapshot.settings);
   for (const key of toggles) settings[key] = input(key).checked;
   settings.cookies = input("cookies").checked ? "visited" : "off";
-  settings.excludedDomains = element("excluded", HTMLTextAreaElement).value.split("\n").filter(value => value.trim()).map(parseDomain);
   return settings;
 }
 

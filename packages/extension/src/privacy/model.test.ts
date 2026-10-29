@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { StateStore } from "@tailchrome/shared/background/state-store";
-import { DEFAULT_SETTINGS, parseSettings, EGYPT_PROFILE, resolveLocation, reducedAgent, makeScope, type PagePolicy } from "./model";
+import { parseSettings, EGYPT_PROFILE, resolveLocation, reducedAgent, makeScope, type PagePolicy } from "./model";
 import { matchesScope } from "./scope";
 import { headerRules } from "./network";
 
@@ -19,9 +19,8 @@ describe("bundled Egypt profile", () => {
     state.exitNode = null;
     expect(resolveLocation(state)).toBeNull();
   });
-  it("rejects broken settings and normalizes exclusions", () => {
+  it("rejects broken settings", () => {
     expect(() => parseSettings({ enabled: true })).toThrow();
-    expect(parseSettings({ ...DEFAULT_SETTINGS, excludedDomains: ["EXAMPLE.com", "*.example.com"] }).excludedDomains).toEqual(["example.com"]);
   });
 });
 
@@ -45,7 +44,7 @@ describe("routing and page scopes", () => {
     const state = new StateStore().getState();
     state.magicDNSSuffix = "network.ts.net.";
     state.dnsRoutes = ["office.example"];
-    const result = makeScope(state, DEFAULT_SETTINGS);
+    const result = makeScope(state);
     expect(matchesScope("nas.network.ts.net", result)).toBe(false);
     expect(matchesScope("wiki.office.example", result)).toBe(false);
     expect(matchesScope("chromewebstore.google.com", result)).toBe(false);

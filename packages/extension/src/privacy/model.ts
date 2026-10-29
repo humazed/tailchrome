@@ -25,7 +25,6 @@ export interface PrivacySettings {
   fingerprint: boolean;
   blockWorkers: boolean;
   cookies: "off" | "visited";
-  excludedDomains: string[];
 }
 
 export interface PagePolicy {
@@ -62,7 +61,6 @@ export const DEFAULT_SETTINGS: PrivacySettings = {
   fingerprint: true,
   blockWorkers: false,
   cookies: "off",
-  excludedDomains: [],
 };
 
 export function parseSettings(value: unknown): PrivacySettings {
@@ -76,8 +74,6 @@ export function parseSettings(value: unknown): PrivacySettings {
   }
   if (input.cookies !== "off" && input.cookies !== "visited") throw new Error("Invalid cookie setting.");
   result.cookies = input.cookies;
-  if (!Array.isArray(input.excludedDomains)) throw new Error("Invalid excluded domains.");
-  result.excludedDomains = [...new Set(input.excludedDomains.map(parseDomain))];
   return result;
 }
 
@@ -97,11 +93,11 @@ export function resolveLocation(state: TailscaleState): LocationProfile | null {
   return { ...EGYPT_PROFILE };
 }
 
-export function makeScope(state: TailscaleState, settings: PrivacySettings): Scope {
+export function makeScope(state: TailscaleState): Scope {
   const internal = [state.magicDNSSuffix, ...(state.dnsRoutes ?? []), ...state.splitDNSDomains];
   return {
     split: state.domainSplit,
-    excluded: [...new Set([...RESTRICTED_DOMAINS, ...settings.excludedDomains,
+    excluded: [...new Set([...RESTRICTED_DOMAINS,
       ...internal.filter((value): value is string => Boolean(value)).map(value => value.replace(/\.$/, "").toLowerCase())])],
   };
 }
@@ -109,15 +105,6 @@ export function makeScope(state: TailscaleState, settings: PrivacySettings): Sco
 export function reducedAgent(agent: string): string {
   return agent.replace(/(Chrome|Chromium|Edg|Firefox)\/(\d+)(?:\.\d+)+/g, "$1/$2.0.0.0")
     .replace(/Firefox\/(\d+)\.0\.0\.0/g, "Firefox/$1.0");
-}
-
-export function parseDomain(value: unknown): string {
-  if (typeof value !== "string") throw new Error("Expected a domain name.");
-  const domain = value.trim().toLowerCase().replace(/^\*\./, "").replace(/\.$/, "");
-  if (!domain || /[/:?#@\s]/.test(domain)) throw new Error("Enter a hostname, without a scheme or path.");
-  const hostname = new URL("https://" + domain).hostname;
-  if (!hostname.includes(".")) throw new Error("Enter a complete domain name.");
-  return hostname;
 }
 
 function record(value: unknown): Record<string, unknown> {

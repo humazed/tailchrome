@@ -15,7 +15,7 @@
       <button type="button" id="permissions">Check status</button>
     </section>
     <form id="settings">
-      <section><label class="toggle master"><span><strong>Enable privacy features</strong><small>Applied while an exit node is connected. Direct and excluded sites keep their own settings.</small></span><input id="enabled" type="checkbox"></label></section>
+      <section><label class="toggle master"><span><strong>Enable privacy features</strong><small>Applied while an exit node is connected. Sites in split tunneling that bypass the exit node keep their own settings.</small></span><input id="enabled" type="checkbox"></label></section>
       <section><h2>Location matching</h2>
         <label class="toggle"><span><strong>Time zone</strong><small>Use Africa/Cairo, including Egypt’s daylight-saving changes.</small></span><input id="timeZone" type="checkbox"></label>
         <label class="toggle"><span><strong>Location coordinates</strong><small>Return approximate Egypt coordinates, with 600 km accuracy. This is not a precise server location.</small></span><input id="location" type="checkbox"></label>
@@ -28,10 +28,6 @@
         <label class="toggle"><span><strong>Protect graphics &amp; audio fingerprints</strong><small>Vary small readout details that websites use to recognize your device. Values stay stable per site for this browser session.</small></span><input id="fingerprint" type="checkbox"></label>
         <label class="toggle"><span><strong>Block new background workers</strong><small>Workers can expose unmodified browser values. Blocking them can break websites. Existing service workers are not removed.</small></span><input id="blockWorkers" type="checkbox"></label>
         <label class="toggle"><span><strong>Clear site cookies after the last tab closes</strong><small>Applies to sites visited while these features are active. This signs you out. Cookies used by another open tab are kept.</small></span><input id="cookies" type="checkbox"></label>
-      </section>
-      <section><h2>Excluded sites</h2>
-        <p>Keep the normal browser values on these domains and their subdomains. Your routing exclusions also apply.</p>
-        <label class="field">One hostname per line<textarea id="excluded" rows="4" placeholder="example.com"></textarea></label>
       </section>
       <div class="save-bar"><p id="feedback" role="status"></p><button type="submit" id="save">Save settings</button></div>
     </form>

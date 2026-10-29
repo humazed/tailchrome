@@ -69,7 +69,7 @@ The privacy browser run verifies:
 - An actual RTCPeerConnection reaches a local UDP STUN server in the unprotected
   positive control, then sends no direct UDP when WebRTC protection is enabled.
 - The actual settings form switches page and request language together.
-- Disable/re-enable, worker blocking, exclusions, last-tab cookie cleanup,
+- Disable/re-enable, worker blocking, last-tab cookie cleanup,
   coordinate-free Egypt nodes, mismatched countries and disconnect restoration.
 
 The automated browser runs use fresh headless profiles and task-owned resources. The

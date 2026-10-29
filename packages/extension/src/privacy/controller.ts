@@ -139,13 +139,13 @@ export class PrivacyController {
     }
     await this.report({ kind: "applying", message: "Applying privacy settings for " + node.hostname + "." });
     await this.setWebRTC(this.settings.webRTC);
-    this.cookieScope = makeScope(state, this.settings);
+    this.cookieScope = makeScope(state);
     const profile = resolveLocation(state);
     const policy: PagePolicy = {
       profile, timeZone: this.settings.timeZone, location: this.settings.location,
       language: this.settings.language, reduceAgent: this.settings.reduceAgent,
       userAgent: reducedAgent(navigator.userAgent), fingerprint: this.settings.fingerprint,
-      blockWorkers: this.settings.blockWorkers, seed: this.seed, scope: makeScope(state, this.settings),
+      blockWorkers: this.settings.blockWorkers, seed: this.seed, scope: makeScope(state),
     };
     const needsPage = this.settings.timeZone || this.settings.location || this.settings.language ||
       this.settings.reduceAgent || this.settings.fingerprint || this.settings.blockWorkers;

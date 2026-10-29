@@ -256,12 +256,6 @@ try {
   }), "SecurityError");
   console.log("PASS: worker blocking");
 
-  snapshot.settings.excludedDomains = [routingTestHost];
-  assert.equal((await request("save", snapshot.settings)).status.kind, "ready");
-  await page.goto(network.baseURL + "/excluded");
-  assert.equal(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), nativeZone);
-  assert.equal(hits.find(hit => hit.path === "/excluded").headers["accept-language"].split(",")[0], nativeLanguage);
-  snapshot.settings.excludedDomains = [];
   snapshot.settings.cookies = "visited";
   await request("save", snapshot.settings);
   await page.goto(network.baseURL + "/cookies");
@@ -271,7 +265,7 @@ try {
   assert.match(await other.evaluate(() => document.cookie), /privacy_fixture=1/);
   await other.close();
   await settings.waitForFunction(async host => !(await chrome.cookies.getAll({ domain: host, name: "privacy_fixture" })).length, {}, routingTestHost);
-  console.log("PASS: exclusions, cookie preservation while another tab is open, cleanup after last tab");
+  console.log("PASS: cookie preservation while another tab is open, cleanup after last tab");
 
   await settings.evaluate(status => chrome.runtime.sendMessage({
     tailchromeE2ENative: { reply: { cmd: "status", status } },
